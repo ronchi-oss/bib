@@ -1,15 +1,21 @@
 package main
 
 import "fmt"
-import "os"
-import "log"
 import "gopkg.in/yaml.v3"
 import "io/ioutil"
+import "log"
+import "os"
+import "strings"
 
-var GLOBAL_CONF = fmt.Sprintf("%s/%s", os.Getenv("XDG_CONFIG_HOME"), "/bib/bib.conf.yml")
+var GLOBAL_CONF = fmt.Sprintf("%s/%s", os.Getenv("XDG_CONFIG_HOME"), "/bib/bib.go.yml")
 
 type GlobalConf struct {
 	Profiles []Profile
+}
+
+type NoteFilterSpec struct {
+	Name    string
+	Pattern string
 }
 
 type Profile struct {
@@ -41,6 +47,8 @@ func main() {
 		} else if subCommand == "get" {
 			getProfile(args)
 		}
+	} else if command == "profile-filters" {
+		getProfileFilters(args)
 	}
 }
 
@@ -49,15 +57,36 @@ func getProfile(args []string) {
 		fmt.Println("Usage: bib profiles get <profile>")
 		os.Exit(1)
 	}
-	var name = args[0]
-	for _, p := range loadProfiles() {
-		if p.Name == name {
-			fmt.Println(p.Target)
-			os.Exit(0)
-		}
+	p, err := loadProfile(args[0])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "profile '%s' not found\n", args[0])
+		os.Exit(1)
 	}
-	fmt.Fprintf(os.Stderr, "profile '%s' not found\n", name)
-	os.Exit(1)
+	fmt.Println(p.Target)
+}
+
+func getProfileFilters(args []string) {
+	if len(args) != 1 {
+		fmt.Fprintf(os.Stderr, "Usage: bib profile-filters <profile>\n")
+		os.Exit(1)
+	}
+	p, err := loadProfile(args[0])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "profile '%s' not found\n", args[0])
+		os.Exit(1)
+	}
+	yamlFile, err := os.ReadFile(getTargetFiltersConfPath(p.Target))
+	if err != nil {
+		log.Fatalf("cannot read filters file: %v", err)
+	}
+	var nfSpecs []NoteFilterSpec
+	if err := yaml.Unmarshal(yamlFile, &nfSpecs); err != nil {
+		log.Fatalf("cannot unmarshal data: %v", err)
+	}
+	fmt.Println("all")
+	for _, s := range nfSpecs {
+		fmt.Println(s.Name)
+	}
 }
 
 func addProfile(args []string) {
@@ -103,6 +132,16 @@ func listProfiles() {
 	}
 }
 
+func loadProfile(name string) (Profile, error) {
+	var p Profile
+	for _, p = range loadProfiles() {
+		if p.Name == name {
+			return p, nil
+		}
+	}
+	return p, fmt.Errorf("profile '%s' not found\n", name)
+}
+
 func loadProfiles() []Profile {
 	return loadGlobalConf().Profiles
 }
@@ -127,4 +166,15 @@ func writeGlobalConf(c GlobalConf) {
 	if err := ioutil.WriteFile(GLOBAL_CONF, d, 0644); err != nil {
 		log.Fatalf("cannot write global conf: %v", err)
 	}
+}
+
+func getTargetFiltersConfPath(targetDir string) string {
+	if strings.HasPrefix(targetDir, "~/") {
+		userHomeDir, err := os.UserHomeDir()
+		if err != nil {
+			panic(err)
+		}
+		targetDir = userHomeDir + "/" + targetDir[2:]
+	}
+	return targetDir + "/bib-filters.yml"
 }
