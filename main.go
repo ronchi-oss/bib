@@ -34,6 +34,8 @@ func main() {
 		args = args[1:]
 		if subCommand == "add" {
 			addProfile(args)
+		} else if subCommand == "delete" {
+			deleteProfile(args)
 		} else if subCommand == "list" {
 			listProfiles()
 		} else if subCommand == "get" {
@@ -72,6 +74,26 @@ func addProfile(args []string) {
 	}
 	p := Profile{Name: args[0], Target: args[1]}
 	c.Profiles = append(c.Profiles, p)
+	writeGlobalConf(c)
+}
+
+func deleteProfile(args []string) {
+	if len(args) != 1 {
+		fmt.Fprintln(os.Stderr, "Usage: bib profiles delete <name>\n")
+		os.Exit(1)
+	}
+	c := loadGlobalConf()
+	found := false
+	for i, p := range c.Profiles {
+		if p.Name == args[0] {
+			found = true
+			c.Profiles = append(c.Profiles[:i], c.Profiles[i+1:]...)
+		}
+	}
+	if !found {
+		fmt.Fprintf(os.Stderr, "profile '%s' not found\n", args[0])
+		os.Exit(1)
+	}
 	writeGlobalConf(c)
 }
 
