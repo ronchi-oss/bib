@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if test -z "$1"; then
+    cat -
+    exit
+fi
+
+awk -v FS='\t' -v OFS='\t' -v pattern="$1" '$4 ~ pattern'

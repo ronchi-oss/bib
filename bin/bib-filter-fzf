@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if test -z "$BIB_PROFILE"; then
+    echo 'BIB_PROFILE must be set' >&2
+    exit 1
+fi
+
+export FZF_DEFAULT_OPTS='--layout=reverse --height=100% --prompt="  " --pointer=">" --color=dark,query:regular,prompt:white:regular,pointer:white:regular,info:-1,border:-1,separator:-1,scrollbar:-1,fg+:regular,bg+:#4C566A,gutter:-1' 
+
+bib get filters \
+    | fzf --bind 'ctrl-j:accept' --exact \
+    | ( read -r line || exit
+        bib get notes -f "$line" | bib-fzf "$line" )

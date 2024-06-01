@@ -1,0 +1,31 @@
+#!/bin/sh
+
+export BIB_FILTER="$1"
+export FZF_DEFAULT_OPTS='--layout=reverse --height=100% --prompt="  " --pointer=">" --color=dark,query:regular,prompt:white:regular,pointer:white:regular,info:-1,border:-1,separator:-1,scrollbar:-1,fg+:regular,bg+:#4C566A,gutter:-1' 
+
+if test -z "$BIB_FILTER"; then
+    echo 'Usage: bib-fzf <filter>' >&2
+    exit 1
+fi
+
+if test -z "$BIB_PROFILE"; then
+    echo 'BIB_PROFILE must be set' >&2
+    exit 1
+fi
+
+fzf \
+    --layout reverse \
+    --tac \
+    --no-sort \
+    --delimiter '\t' \
+    --with-nth 1,2,3,4 \
+    --tabstop 2 \
+    --nth 2,4 \
+    --bind 'ctrl-]:execute-silent(bib toggle-pin {1})' \
+    --bind 'ctrl-g:ignore,esc:ignore' \
+    --bind 'ctrl-i:toggle-preview' \
+    --bind 'ctrl-j:execute(bib edit {1})' \
+    --bind 'ctrl-r:reload(bib get notes -f $BIB_FILTER)' \
+    --bind 'ctrl-space:change-preview-window(bottom,60%|)' \
+    --preview 'bib cat {1} | sed -n 3,\$p' \
+    --preview-window 'right,50%,wrap'
