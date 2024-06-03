@@ -1,4 +1,4 @@
-package cmd
+package cat
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var catCmd = &cobra.Command{
-	Use:   "cat [flags] <note-id>",
+var noteCmd = &cobra.Command{
+	Use:   "note [flags] <note-id>",
 	Short: "Print a note Markdown contents",
 	Long:  ``,
 	Args:  cobra.MatchAll(cobra.ExactArgs(1)),
@@ -34,6 +34,6 @@ var catCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(catCmd)
-	utils.InitTargetDirScopedFlags(catCmd, &TargetDir, &ProfileName)
+	catCmd.AddCommand(noteCmd)
+	utils.InitTargetDirScopedFlags(noteCmd, &TargetDir, &ProfileName)
 }
