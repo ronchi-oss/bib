@@ -47,3 +47,15 @@ func GetFilter(targetDir string, name string) (*Filter, error) {
 	}
 	return nil, fmt.Errorf("target directory %s does not include a filter named '%s'", targetDir, name)
 }
+
+func GetTemplates(targetDir string) ([]string, error) {
+	files, err := os.ReadDir(fmt.Sprintf("%s/tpl", targetDir))
+	if err != nil {
+		return nil, fmt.Errorf("cannot read templates for target directory %s: %v", targetDir, err)
+	}
+	names := []string{}
+	for _, f := range files {
+		names = append(names, f.Name())
+	}
+	return names, nil
+}
