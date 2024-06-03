@@ -53,24 +53,39 @@ var initCmd = &cobra.Command{
 
 		fmt.Println("Ok, let's do this.")
 
-		localConfPath := fmt.Sprintf("%s/bib.yml", targetDir)
-		if _, err := os.OpenFile(localConfPath, os.O_RDONLY|os.O_CREATE|os.O_EXCL, 0644); err != nil {
-			return fmt.Errorf("target directory config file %s already exists.", localConfPath)
-		}
-
 		c := conf.LocalConf{
+			DefaultTemplate: "default.tpl.md",
 			Filters: []*conf.Filter{
 				{Name: "all", Cmd: "cat", CmdArgs: []string{}},
 				{Name: "pinned", Cmd: "bib-pin-filter", CmdArgs: []string{}},
 			},
 			Hooks: []*conf.Hook{},
 		}
+
+		if err := os.MkdirAll(fmt.Sprintf("%s/tpl", targetDir), 0755); err != nil {
+			return fmt.Errorf("failed creating templates directory: %v", err)
+		}
+
+		localConfPath := fmt.Sprintf("%s/bib.yml", targetDir)
+		defaultTplPath := fmt.Sprintf("%s/tpl/%s", targetDir, c.DefaultTemplate)
+		if _, err := os.OpenFile(localConfPath, os.O_RDONLY|os.O_CREATE|os.O_EXCL, 0644); err != nil {
+			return fmt.Errorf("target directory config file %s already exists.", localConfPath)
+		}
+		if _, err := os.OpenFile(defaultTplPath, os.O_RDONLY|os.O_CREATE|os.O_EXCL, 0644); err != nil {
+			return fmt.Errorf("target directory default template file %s already exists.", defaultTplPath)
+		}
+
 		d, err := conf.YAMLEncode(&c)
 		if err != nil {
 			return fmt.Errorf("failed encoding local config file to YAML: %v", err)
 		}
 		if err := ioutil.WriteFile(localConfPath, d, 0644); err != nil {
 			return fmt.Errorf("failed writing to local config file: %v", err)
+		}
+
+		tpl := []byte(conf.GenerateDefaultTemplateContents())
+		if err := ioutil.WriteFile(defaultTplPath, tpl, 0644); err != nil {
+			return fmt.Errorf("failed writing to default template file: %v", err)
 		}
 
 		if _, err := db.AppendNote(targetDir, "My first note"); err != nil {

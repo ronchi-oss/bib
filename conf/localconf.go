@@ -8,8 +8,9 @@ import (
 )
 
 type LocalConf struct {
-	Filters []*Filter `yaml:"filters"`
-	Hooks   []*Hook   `yaml:"hooks"`
+	DefaultTemplate string    `yaml:"default_template"`
+	Filters         []*Filter `yaml:"filters"`
+	Hooks           []*Hook   `yaml:"hooks"`
 }
 
 type Filter struct {
