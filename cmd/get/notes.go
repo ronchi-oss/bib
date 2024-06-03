@@ -61,7 +61,7 @@ var notesCmd = &cobra.Command{
 		writer.Close()
 		if filterCmd != nil {
 			if err := filterCmd.Run(); err != nil {
-				return fmt.Errorf("filter process '%s' failed: %v", err)
+				return fmt.Errorf("filter process '%s' failed: %v", filterCmd.Path, err)
 			}
 		}
 		return nil
