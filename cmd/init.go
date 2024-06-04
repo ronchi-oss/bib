@@ -88,7 +88,7 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("failed writing to default template file: %v", err)
 		}
 
-		if _, err := db.AppendNote(targetDir, "My first note"); err != nil {
+		if _, err := db.AppendNote(targetDir, c.DefaultTemplate, "My first note", []byte{}); err != nil {
 			return fmt.Errorf("failed creating first note: %s", err)
 		}
 

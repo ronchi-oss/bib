@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ronchi-oss/bib/cmd/utils"
 	"github.com/ronchi-oss/bib/conf"
 	"gopkg.in/yaml.v3"
 )
@@ -59,7 +60,7 @@ func GetNotes(targetDir string) ([]*Note, error) {
 	return notes, nil
 }
 
-func AppendNote(targetDir string, title string) (int, error) {
+func AppendNote(targetDir, template, title string, body []byte) (int, error) {
 	if err := os.MkdirAll(fmt.Sprintf("%s/src", targetDir), 0750); err != nil {
 		return 0, err
 	}
@@ -102,7 +103,7 @@ func AppendNote(targetDir string, title string) (int, error) {
 		return 0, err
 	}
 	defer f2.Close()
-	if _, err := f2.WriteString(fmt.Sprintf("# %s\n", title)); err != nil {
+	if err := utils.RenderTemplate(f2, fmt.Sprintf("%s/tpl/%s", targetDir, template), title, body); err != nil {
 		return 0, err
 	}
 	return newID, nil
