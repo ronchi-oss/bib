@@ -12,6 +12,7 @@ import (
 	"github.com/ronchi-oss/bib/db"
 	"github.com/ronchi-oss/bib/hook"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var (
@@ -57,7 +58,7 @@ var noteCmd = &cobra.Command{
 			return fmt.Errorf("failed loading target directory bib config file: %v", err)
 		}
 		hook.NotifyAll(conf.Hooks, "note.created", []string{strconv.Itoa(id), title})
-		if !readStdin {
+		if !readStdin && term.IsTerminal(int(os.Stdin.Fd())) {
 			e, err := utils.GetPreferredEditor()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
