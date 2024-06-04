@@ -24,8 +24,8 @@ fzf \
     --bind 'ctrl-]:execute-silent(bib toggle-pin {1})' \
     --bind 'ctrl-g:ignore,esc:ignore' \
     --bind 'ctrl-i:toggle-preview' \
-    --bind 'ctrl-j:execute(bib edit {1})' \
+    --bind 'ctrl-j:execute(bib edit note {1})' \
     --bind 'ctrl-r:reload(bib get notes -f $BIB_FILTER)' \
     --bind 'ctrl-space:change-preview-window(bottom,60%|)' \
-    --preview 'bib cat {1} | sed -n 3,\$p' \
+    --preview 'bib cat note {1} | sed -n 3,\$p' \
     --preview-window 'right,50%,wrap'
