@@ -46,6 +46,9 @@ var noteCmd = &cobra.Command{
 			return err
 		}
 		if len(template) == 0 {
+			if len(c.DefaultTemplate) == 0 {
+				return fmt.Errorf("cannot fallback to default template: local config file property 'default_template' not set")
+			}
 			template = c.DefaultTemplate
 		}
 		id, err := db.AppendNote(targetDir, template, title, body)
