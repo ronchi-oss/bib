@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/ronchi-oss/bib/cmd/utils"
-	"github.com/ronchi-oss/bib/conf"
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +13,9 @@ var templateCmd = &cobra.Command{
 	Short: "Print a template file contents",
 	Long:  ``,
 	Args:  cobra.MatchAll(cobra.ExactArgs(1)),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return utils.TemplateNameShellComp(TargetDir, ProfileName)
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		targetDir, err := utils.GetTargetDir(TargetDir, ProfileName)
 		if err != nil {
@@ -26,17 +28,6 @@ var templateCmd = &cobra.Command{
 		}
 		fmt.Print(string(data))
 		return nil
-	},
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		targetDir, err := utils.GetTargetDir(TargetDir, ProfileName)
-		if err != nil {
-			return []string{}, cobra.ShellCompDirectiveError
-		}
-		templates, err := conf.GetTemplates(targetDir)
-		if err != nil {
-			return []string{}, cobra.ShellCompDirectiveError
-		}
-		return templates, cobra.ShellCompDirectiveDefault
 	},
 }
 

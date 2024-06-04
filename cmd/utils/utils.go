@@ -77,3 +77,15 @@ func GetPreferredEditor() (string, error) {
 	}
 	return "", fmt.Errorf("could not determine preferred editor command (both BIB_EDITOR and EDITOR variables are empty)")
 }
+
+func TemplateNameShellComp(targetDir, profileName string) ([]string, cobra.ShellCompDirective) {
+	targetDir, err := GetTargetDir(targetDir, profileName)
+	if err != nil {
+		return []string{}, cobra.ShellCompDirectiveError
+	}
+	templates, err := conf.GetTemplates(targetDir)
+	if err != nil {
+		return []string{}, cobra.ShellCompDirectiveError
+	}
+	return templates, cobra.ShellCompDirectiveDefault
+}
