@@ -62,5 +62,5 @@ func GetTemplates(targetDir string) ([]string, error) {
 }
 
 func GenerateDefaultTemplateContents() string {
-	return "# {{ .Title }}\n\n{{ .Body }}\n"
+	return "# {{ .Title }}\n\n{{ .Body -}}\n"
 }

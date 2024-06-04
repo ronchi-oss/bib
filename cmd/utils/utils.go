@@ -2,7 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"html/template"
+	"io"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/ronchi-oss/bib/conf"
@@ -88,4 +91,36 @@ func TemplateNameShellComp(targetDir, profileName string) ([]string, cobra.Shell
 		return []string{}, cobra.ShellCompDirectiveError
 	}
 	return templates, cobra.ShellCompDirectiveDefault
+}
+
+func RenderTemplate(wr io.Writer, path, title string, body []byte) error {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("failed reading template file %s: %v", path, err)
+	}
+	tmpl, err := template.New("note").
+		Funcs(template.FuncMap{
+			"sh": func(c string) string {
+				out, err := exec.Command("sh", "-c", c).Output()
+				if err != nil {
+					out = []byte(fmt.Sprintf("Error: %s", err))
+				}
+				return string(out)
+			},
+			"env": func(name string) string {
+				return os.Getenv(name)
+			},
+		}).
+		Parse(string(b))
+	if err != nil {
+		return err
+	}
+	err = tmpl.Execute(wr, map[string]any{
+		"Title": title,
+		"Body":  string(body),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
