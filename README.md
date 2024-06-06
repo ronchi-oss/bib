@@ -91,13 +91,13 @@ bib show note 1 -d ~/bib-private-notes
 We can output our first note Markdown file with:
 
 ```sh
-bib cat 1 -d ~/bib-private-notes
+bib cat note 1 -d ~/bib-private-notes
 ```
 
 We can edit our first note Markdown file with (uses the `EDITOR` environment variable):
 
 ```sh
-bib edit 1 -d ~/bib-private-notes
+bib edit note 1 -d ~/bib-private-notes
 ```
 
 The following sections will build on these basics and explain the features that bib provides in order to create, edit, browse and filter notes more efficiently.
@@ -129,8 +129,8 @@ private ~/bib-private-notes
 Here's why profiles are handy: whenever a bib command accepts a `-d` (long form: `--target-dir`) option, it also accepts a `-p` (long form: `--profile`) option. Which means, for the hypothetical setup we have for this tutorial, the following two commands are equivalent:
 
 ```sh
-bib cat 1 -d ~/bib-private-notes
-bib cat 1 -p private
+bib cat note 1 -d ~/bib-private-notes
+bib cat note 1 -p private
 ```
 
 While the `-p <profile-name>` form allows us to type a bit less, we are still typing quite a lot. The good news is, if you leave out both `-d` and `-p` options, bib will attempt to use the value of the `BIB_PROFILE` environment variable as the profile name:
@@ -138,7 +138,7 @@ While the `-p <profile-name>` form allows us to type a bit less, we are still ty
 
 ```sh
 export BIB_PROFILE=private
-bib cat 1
+bib cat note 1
 ```
 
 ## Taking notes
