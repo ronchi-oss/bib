@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/ronchi-oss/bib/cmd/utils"
@@ -28,41 +29,40 @@ var notesCmd = &cobra.Command{
 			return fmt.Errorf("failed loading notes: %v", err)
 		}
 		var filterCmd *exec.Cmd
-		reader, writer := os.Stdin, os.Stdout
-		if len(filterName) > 0 {
-			f, err := conf.GetFilter(targetDir, filterName)
-			if err != nil {
-				return fmt.Errorf("failed loading filter '%s': %v", filterName, err)
-			}
-			reader, writer, err = os.Pipe()
-			if err != nil {
-				return fmt.Errorf("unexpected error: %v", err)
-			}
-			path, err := utils.ExpandPath(f.Cmd)
-			if err != nil {
-				return fmt.Errorf("failed to expand path %s: %v", f.Cmd, err)
-			}
-			filterCmd = exec.Command(path, f.CmdArgs...)
-			filterCmd.Stdin = reader
-			filterCmd.Stdout = os.Stdout
-			filterCmd.Stderr = os.Stderr
-		}
+		builder := strings.Builder{}
 		for _, note := range notes {
 			pinned := " "
 			if note.Pinned {
 				pinned = "*"
 			}
-			fmt.Fprintf(writer, "%d\t%s\t%s\t%s\n",
-				note.ID,
-				pinned,
-				note.CreatedAt.Format(time.DateTime),
-				note.Title)
+			builder.WriteString(
+				fmt.Sprintf("%d\t%s\t%s\t%s\n",
+					note.ID,
+					pinned,
+					note.CreatedAt.Format(time.DateTime),
+					note.Title))
 		}
-		writer.Close()
-		if filterCmd != nil {
-			if err := filterCmd.Run(); err != nil {
-				return fmt.Errorf("filter process '%s' failed: %v", filterCmd.Path, err)
-			}
+		if len(filterName) == 0 {
+			fmt.Print(builder.String())
+			return nil
+		}
+		f, err := conf.GetFilter(targetDir, filterName)
+		if err != nil {
+			return fmt.Errorf("failed loading filter '%s': %v", filterName, err)
+		}
+		if err != nil {
+			return fmt.Errorf("unexpected error: %v", err)
+		}
+		path, err := utils.ExpandPath(f.Cmd)
+		if err != nil {
+			return fmt.Errorf("failed to expand path %s: %v", f.Cmd, err)
+		}
+		filterCmd = exec.Command(path, f.CmdArgs...)
+		filterCmd.Stdin = strings.NewReader(builder.String())
+		filterCmd.Stdout = os.Stdout
+		filterCmd.Stderr = os.Stderr
+		if err := filterCmd.Run(); err != nil {
+			return fmt.Errorf("filter process '%s' failed: %v", filterCmd.Path, err)
 		}
 		return nil
 	},
